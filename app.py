@@ -7,22 +7,20 @@ app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
 # --- Database Configuration ---
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
-    'DATABASE_URL', 'sqlite:///local.db'
-)
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///local.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
 db = SQLAlchemy(app)
 
 # --- File Upload Path ---
 UPLOAD_FOLDER = os.path.join('static', 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# --- Dummy Credentials ---
+# --- Dummy Login Credentials ---
 DUMMY_USER = 'admin'
 DUMMY_PASS = 'admin123'
 
-# --- Models ---
+# ------------------- MODELS -------------------
+
 class Vendor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
@@ -46,8 +44,7 @@ class Project(db.Model):
     contact = db.Column(db.String(20))
     incharge = db.Column(db.String(100))
 
-
-# --- Routes ---
+# ------------------- ROUTES -------------------
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
@@ -154,17 +151,17 @@ def cancel():
     flash('Action cancelled.', 'info')
     return redirect(url_for('login'))
 
+# ------------------- INIT TABLES -------------------
 
-# --- Create Tables on First Run ---
 @app.before_first_request
 def create_tables():
     db.create_all()
     if not Vendor.query.first():
-        # Dummy vendors for dropdown
         db.session.add(Vendor(name="ABC Corp", gst="GST123", address="Chennai"))
         db.session.add(Vendor(name="XYZ Ltd", gst="GST456", address="Bangalore"))
         db.session.commit()
 
-# --- Main ---
+# ------------------- MAIN -------------------
+
 if __name__ == '__main__':
     app.run(debug=True)
