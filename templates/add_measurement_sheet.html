@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Measurement Sheet</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .hide { display: none; }
+        .table td input { width: 100%; }
+    </style>
+</head>
+<body class="p-4">
+    <div class="row">
+        <!-- Left Side -->
+        <div class="col-md-6">
+            <h5>AutoCAD Viewer</h5>
+            <input type="file" id="tagFile" class="form-control mb-2">
+            <div id="filePreview" class="mt-2"></div>
+            <hr>
+            <h6>Revised Tag File</h6>
+            <input type="file" id="revisedFile" class="form-control">
+        </div>
+
+        <!-- Right Side -->
+        <div class="col-md-6">
+            <h5>Duct Entry Form</h5>
+            <div class="form-row">
+                <input class="form-control col" placeholder="Duct No" id="ductNo">
+                <select class="form-control col" id="ductType">
+                    <option value="">Type</option>
+                    <option value="st">st</option>
+                    <option value="elb">elb</option>
+                    <option value="red">red</option>
+                    <option value="dm">dm</option>
+                    <option value="offset">offset</option>
+                    <option value="shoe">shoe</option>
+                    <option value="vanes">vanes</option>
+                </select>
+                <input class="form-control col" placeholder="w1" id="w1">
+                <input class="form-control col" placeholder="h1" id="h1">
+                <input class="form-control col" placeholder="w2" id="w2">
+                <input class="form-control col" placeholder="h2" id="h2">
+            </div>
+            <div class="form-row mt-2">
+                <input class="form-control col" placeholder="Length/Radius" id="lengthRadius">
+                <input class="form-control col" placeholder="Offset/Degree" id="offsetDegree">
+                <input class="form-control col" placeholder="Quantity" id="quantity">
+                <input class="form-control col hide" placeholder="Factor" id="factor">
+            </div>
+            <button class="btn btn-primary mt-2" id="addEntryBtn">Add Duct Entry</button>
+        </div>
+    </div>
+
+    <hr>
+    <h5 class="mt-4">Live Table</h5>
+    <table class="table table-bordered" id="ductTable">
+        <thead class="thead-light">
+            <tr>
+                <th>Duct No</th>
+                <th>Duct Type</th>
+                <th>w1</th>
+                <th>h1</th>
+                <th>w2</th>
+                <th>h2</th>
+                <th>Length/Radius</th>
+                <th>Offset/Degree</th>
+                <th>Quantity</th>
+                <th>Factor</th>
+                <th>Area</th>
+                <th>Gauge</th>
+                <th>24g</th>
+                <th>22g</th>
+                <th>20g</th>
+                <th>18g</th>
+                <th>Gasket</th>
+                <th>Corner</th>
+                <th>Cleat</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            <!-- JS will populate this -->
+        </tbody>
+    </table>
+
+    <script>
+        // Show/hide factor field
+        document.getElementById('ductType').addEventListener('change', function () {
+            const typesWithFactor = ['elb', 'red', 'offset', 'shoe'];
+            const factorField = document.getElementById('factor');
+            factorField.classList.toggle('hide', !typesWithFactor.includes(this.value));
+        });
+
+        // Add entry to live table
+        document.getElementById('addEntryBtn').addEventListener('click', function () {
+            const row = document.createElement('tr');
+            const values = [
+                'ductNo', 'ductType', 'w1', 'h1', 'w2', 'h2',
+                'lengthRadius', 'offsetDegree', 'quantity', 'factor'
+            ];
+            const data = {};
+            values.forEach(id => {
+                data[id] = document.getElementById(id).value || '';
+            });
+
+            // Fake area/gauge/gasket/corner/cleat for now
+            const extra = {
+                area: '—', gauge: '—', g24: '—', g22: '—', g20: '—', g18: '—',
+                gasket: '—', corner: '—', cleat: '—'
+            };
+
+            const allData = { ...data, ...extra };
+
+            Object.values(allData).forEach(val => {
+                const td = document.createElement('td');
+                td.innerHTML = `<input value="${val}" />`;
+                row.appendChild(td);
+            });
+
+            // Actions
+            const actions = document.createElement('td');
+            actions.innerHTML = `
+                <button class="btn btn-sm btn-success edit">Edit</button>
+                <button class="btn btn-sm btn-danger delete">Delete</button>
+            `;
+            row.appendChild(actions);
+
+            // Delete functionality
+            actions.querySelector('.delete').addEventListener('click', () => {
+                if (confirm("Delete this row?")) row.remove();
+            });
+
+            // Edit functionality
+            actions.querySelector('.edit').addEventListener('click', () => {
+                const inputs = row.querySelectorAll('input');
+                inputs.forEach(input => input.removeAttribute('readonly'));
+            });
+
+            document.getElementById('tableBody').appendChild(row);
+
+            // Reset form
+            values.forEach(id => document.getElementById(id).value = '');
+            document.getElementById('factor').classList.add('hide');
+        });
+
+        // File preview (optional)
+        document.getElementById('tagFile').addEventListener('change', function () {
+            const fileName = this.files[0]?.name || '';
+            document.getElementById('filePreview').innerText = `Selected file: ${fileName}`;
+        });
+    </script>
+</body>
+</html>
