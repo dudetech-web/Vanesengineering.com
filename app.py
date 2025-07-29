@@ -1,4 +1,5 @@
 import os
+import math
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
@@ -6,8 +7,8 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
-# --- Database Configuration ---
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///local.db')
+# --- PostgreSQL Config (Permanent Storage) ---
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://duct_vendor_app_user:6F8CX3mCEBU8E4azRCf0s6gdQeWaL9bq@dpg-d243r9qli9vc73ca99ag-a.singapore-postgres.render.com/duct_vendor_app'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -43,6 +44,81 @@ class Project(db.Model):
     email = db.Column(db.String(100))
     contact = db.Column(db.String(20))
     incharge = db.Column(db.String(100))
+
+class Measurement(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id'))
+    tag_file = db.Column(db.String(200))
+    duct_no = db.Column(db.String(50))
+    duct_type = db.Column(db.String(50))
+    w1 = db.Column(db.Float)
+    h1 = db.Column(db.Float)
+    w2 = db.Column(db.Float)
+    h2 = db.Column(db.Float)
+    length = db.Column(db.Float)
+    degree = db.Column(db.Float)
+    quantity = db.Column(db.Integer)
+    factor = db.Column(db.Float)
+    area = db.Column(db.Float)
+    gauge = db.Column(db.String(10))
+    g24 = db.Column(db.Float)
+    g22 = db.Column(db.Float)
+    g20 = db.Column(db.Float)
+    g18 = db.Column(db.Float)
+    gasket = db.Column(db.Integer)
+    corner_pieces = db.Column(db.Integer)
+    cleat = db.Column(db.Float)
+
+# ------------------- CALCULATION FUNCTION -------------------
+
+def calculate_area_and_gauge(data):
+    w1 = float(data.get('w1', 0))
+    h1 = float(data.get('h1', 0))
+    w2 = float(data.get('w2', 0))
+    h2 = float(data.get('h2', 0))
+    length = float(data.get('length', 0))
+    degree = float(data.get('degree', 0))
+    qty = int(data.get('quantity', 0))
+    factor = float(data.get('factor', 1))
+    duct_type = data.get('duct_type', '').lower()
+
+    area = 0
+
+    if duct_type == 'st':
+        area = 2 * (w1 + h1) / 1000 * (length / 1000) * qty
+    elif duct_type == 'red':
+        area = (w1 + h1 + w2 + h2) / 1000 * (length / 1000) * qty * factor
+    elif duct_type == 'dm':
+        area = (w1 / 1000 + h1 / 1000) * qty
+    elif duct_type == 'offset':
+        area = (w1 + h1 + w2 + h2) / 1000 * ((length + degree) / 1000) * qty * factor
+    elif duct_type == 'shoe':
+        area = (w1 + h1) * 2 / 1000 * (length / 1000) * qty * factor
+    elif duct_type == 'vanes':
+        area = (w1 / 1000) * (2 * math.pi * (w1 / 1000) / 4) * qty
+    elif duct_type == 'elb':
+        area = 2 * (w1 + h1) / 1000 * ((h1 / 2) / 1000 + (length / 1000) * math.pi * (degree / 180)) * qty * factor
+
+    if area <= 0.75:
+        gauge = '24g'
+    elif area <= 1.20:
+        gauge = '22g'
+    elif area <= 1.80:
+        gauge = '20g'
+    else:
+        gauge = '18g'
+
+    g24 = area if gauge == '24g' else 0
+    g22 = area if gauge == '22g' else 0
+    g20 = area if gauge == '20g' else 0
+    g18 = area if gauge == '18g' else 0
+
+    # Final formula (based on image you sent):
+    gasket = qty * 2
+    corner_pieces = qty * 4
+    cleat = qty * 1.2
+
+    return area, gauge, g24, g22, g20, g18, gasket, corner_pieces, cleat
 
 # ------------------- ROUTES -------------------
 
@@ -82,20 +158,16 @@ def register_vendor():
 def new_project():
     vendors = Vendor.query.all()
     projects = Project.query.all()
-
-    # Always calculate the next Enquiry ID (GET or POST)
     count = Project.query.count() + 1
     next_enquiry_id = f"VE/TN/2526/E{str(count).zfill(3)}"
 
     if request.method == 'POST':
         vendor_id = request.form['vendor_id']
-
         file = request.files.get('drawing')
         filename = None
         if file and file.filename:
             filename = secure_filename(file.filename)
-            upload_path = os.path.join(UPLOAD_FOLDER, filename)
-            file.save(upload_path)
+            file.save(os.path.join(UPLOAD_FOLDER, filename))
 
         project = Project(
             enquiry_id=next_enquiry_id,
@@ -115,14 +187,10 @@ def new_project():
         db.session.add(project)
         db.session.commit()
         flash(f'Project saved! Enquiry ID: {next_enquiry_id}', 'success')
-
-        # Re-fetch updated list after save
         projects = Project.query.all()
         return render_template('new_project.html', vendors=vendors, projects=projects, enquiry_id_created=next_enquiry_id)
 
-    # Initial GET
     return render_template('new_project.html', vendors=vendors, projects=projects, enquiry_id_created=next_enquiry_id)
-
 
 @app.route('/delete_project/<int:project_id>')
 def delete_project(project_id):
@@ -147,10 +215,37 @@ def update_project(project_id):
     db.session.commit()
     return jsonify({'status': 'success'})
 
-@app.route('/cancel')
-def cancel():
-    flash('Action cancelled.', 'info')
-    return redirect(url_for('login'))
+@app.route('/add_measurement/<int:project_id>', methods=['POST'])
+def add_measurement(project_id):
+    data = request.get_json()
+
+    area, gauge, g24, g22, g20, g18, gasket, corner_pieces, cleat = calculate_area_and_gauge(data)
+
+    measurement = Measurement(
+        project_id=project_id,
+        duct_no=data['duct_no'],
+        duct_type=data['duct_type'],
+        w1=data['w1'],
+        h1=data['h1'],
+        w2=data['w2'],
+        h2=data['h2'],
+        length=data['length'],
+        degree=data['degree'],
+        quantity=data['quantity'],
+        factor=data['factor'],
+        area=area,
+        gauge=gauge,
+        g24=g24,
+        g22=g22,
+        g20=g20,
+        g18=g18,
+        gasket=gasket,
+        corner_pieces=corner_pieces,
+        cleat=cleat
+    )
+    db.session.add(measurement)
+    db.session.commit()
+    return jsonify({'status': 'saved'})
 
 # ------------------- INITIALIZE DB -------------------
 with app.app_context():
