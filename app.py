@@ -5,7 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
-# Database config: use PostgreSQL from Render or fallback to SQLite for local use
+# Database config: Render uses DATABASE_URL; fallback for local
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
     'DATABASE_URL',
     'sqlite:///local.db'
@@ -18,6 +18,8 @@ db = SQLAlchemy(app)
 DUMMY_USER = 'admin'
 DUMMY_PASS = 'admin123'
 
+# ------------------- ROUTES -------------------
+
 @app.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -25,27 +27,32 @@ def login():
         pwd = request.form['password']
         if uname == DUMMY_USER and pwd == DUMMY_PASS:
             flash('Login successful!', 'success')
-            return redirect(url_for('register_vendor'))
+            return redirect(url_for('dashboard'))
         else:
             flash('Invalid username or password.', 'error')
+    return render_template('login.html')
+
+
+@app.route('/dashboard')
+def dashboard():
     return render_template('dashboard.html')
+
 
 @app.route('/register_vendor', methods=['GET', 'POST'])
 def register_vendor():
     if request.method == 'POST':
+        # You can later save form data to DB here
         flash('Vendor saved successfully!', 'success')
         return redirect(url_for('register_vendor'))
     return render_template('register_vendor.html')
+
 
 @app.route('/cancel')
 def cancel():
     flash('Action cancelled.', 'info')
     return redirect(url_for('login'))
 
-
-@app.route('/dashboard')
-def dashboard():
-    return render_template('dashboard.html')
+# ------------------- MAIN -------------------
 
 if __name__ == '__main__':
     app.run(debug=True)
