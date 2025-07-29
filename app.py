@@ -82,13 +82,13 @@ def register_vendor():
 def new_project():
     vendors = Vendor.query.all()
     projects = Project.query.all()
-    enquiry_id_created = None  # initialize this variable
+
+    # Always calculate the next Enquiry ID (GET or POST)
+    count = Project.query.count() + 1
+    next_enquiry_id = f"VE/TN/2526/E{str(count).zfill(3)}"
 
     if request.method == 'POST':
         vendor_id = request.form['vendor_id']
-        count = Project.query.count() + 1
-        enquiry_id = f"VE/TN/2526/E{str(count).zfill(3)}"
-        enquiry_id_created = enquiry_id  # store for display
 
         file = request.files.get('drawing')
         filename = None
@@ -98,7 +98,7 @@ def new_project():
             file.save(upload_path)
 
         project = Project(
-            enquiry_id=enquiry_id,
+            enquiry_id=next_enquiry_id,
             quotation=request.form['quotation'],
             start_date=request.form['start_date'],
             end_date=request.form['end_date'],
@@ -114,13 +114,14 @@ def new_project():
         )
         db.session.add(project)
         db.session.commit()
-        flash('Project saved successfully!', 'success')
+        flash(f'Project saved! Enquiry ID: {next_enquiry_id}', 'success')
 
-        # Don't redirect — just re-render with the new ID
-        return render_template('new_project.html', vendors=vendors, projects=projects, enquiry_id_created=enquiry_id_created)
+        # Re-fetch updated list after save
+        projects = Project.query.all()
+        return render_template('new_project.html', vendors=vendors, projects=projects, enquiry_id_created=next_enquiry_id)
 
-    return render_template('new_project.html', vendors=vendors, projects=projects)
-
+    # Initial GET
+    return render_template('new_project.html', vendors=vendors, projects=projects, enquiry_id_created=next_enquiry_id)
 
 
 @app.route('/delete_project/<int:project_id>')
