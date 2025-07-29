@@ -1,6 +1,10 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
+import uuid
+from flask import jsonify
+from models import db, Vendor, Project
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -13,6 +17,31 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+
+
+
+class Vendor(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    gst = db.Column(db.String(20))
+    address = db.Column(db.String(200))
+
+class Project(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    enquiry_id = db.Column(db.String(50), unique=True, nullable=False)
+    quotation = db.Column(db.String(100))
+    start_date = db.Column(db.String(20))
+    end_date = db.Column(db.String(20))
+    location = db.Column(db.String(100))
+    source_drawing = db.Column(db.String(200))
+    vendor_id = db.Column(db.Integer, db.ForeignKey('vendor.id'))
+    vendor = db.relationship('Vendor', backref='projects')
+    gst_no = db.Column(db.String(20))
+    address = db.Column(db.String(200))
+    notes = db.Column(db.String(200))
+    email = db.Column(db.String(100))
+    contact = db.Column(db.String(20))
+    incharge = db.Column(db.String(100))
 
 # Dummy login credentials
 DUMMY_USER = 'admin'
@@ -51,6 +80,74 @@ def register_vendor():
 def cancel():
     flash('Action cancelled.', 'info')
     return redirect(url_for('login'))
+
+
+
+
+# --- New Project Route ---
+@app.route('/new_project', methods=['GET', 'POST'])
+def new_project():
+    vendors = Vendor.query.all()
+    projects = Project.query.all()
+
+    if request.method == 'POST':
+        vendor_id = request.form['vendor_id']
+        count = Project.query.count() + 1
+        enquiry_id = f"VE/TN/2526/E{str(count).zfill(3)}"
+
+        file = request.files.get('drawing')
+        filename = None
+        if file and file.filename:
+            filename = secure_filename(file.filename)
+            upload_path = os.path.join('static/uploads', filename)
+            file.save(upload_path)
+
+        project = Project(
+            enquiry_id=enquiry_id,
+            quotation=request.form['quotation'],
+            start_date=request.form['start_date'],
+            end_date=request.form['end_date'],
+            location=request.form['location'],
+            source_drawing=filename,
+            vendor_id=vendor_id,
+            gst_no=request.form['gst_no'],
+            address=request.form['address'],
+            notes=request.form['notes'],
+            email=request.form['email'],
+            contact=request.form['contact'],
+            incharge=request.form['incharge']
+        )
+        db.session.add(project)
+        db.session.commit()
+        flash('Project saved successfully!', 'success')
+        return redirect(url_for('new_project'))
+
+    return render_template('new_project.html', vendors=vendors, projects=projects)
+
+# --- Delete Project ---
+@app.route('/delete_project/<int:project_id>')
+def delete_project(project_id):
+    proj = Project.query.get_or_404(project_id)
+    db.session.delete(proj)
+    db.session.commit()
+    flash('Project deleted!', 'success')
+    return redirect(url_for('new_project'))
+
+# --- Update Project via AJAX ---
+@app.route('/update_project/<int:project_id>', methods=['POST'])
+def update_project(project_id):
+    proj = Project.query.get_or_404(project_id)
+    data = request.get_json()
+    proj.quotation = data.get('quotation')
+    proj.start_date = data.get('start_date')
+    proj.end_date = data.get('end_date')
+    proj.location = data.get('location')
+    proj.incharge = data.get('incharge')
+    proj.contact = data.get('contact')
+    proj.email = data.get('email')
+    proj.notes = data.get('notes')
+    db.session.commit()
+    return jsonify({'status': 'success'})
 
 # ------------------- MAIN -------------------
 
