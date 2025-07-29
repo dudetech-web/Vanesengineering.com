@@ -17,8 +17,8 @@
         <form method="POST" enctype="multipart/form-data" class="border p-4 rounded bg-light">
             <div class="row">
                 <div class="col-md-3">
-                    <label>Enquiry ID</label>
-                    <input type="text" class="form-control" value="Auto-generated on save" disabled>
+    <label>Enquiry ID</label>
+    <input type="text" class="form-control" value="{{ enquiry_id_created or 'Will be auto-generated' }}" disabled>
                 </div>
                 <div class="col-md-3">
                     <label>Quotation</label>
