@@ -28,7 +28,7 @@ def login():
             return redirect(url_for('register_vendor'))
         else:
             flash('Invalid username or password.', 'error')
-    return render_template('login.html')
+    return render_template('dashboard.html')
 
 @app.route('/register_vendor', methods=['GET', 'POST'])
 def register_vendor():
@@ -41,6 +41,11 @@ def register_vendor():
 def cancel():
     flash('Action cancelled.', 'info')
     return redirect(url_for('login'))
+
+
+@app.route('/dashboard')
+def dashboard():
+    return render_template('dashboard.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
