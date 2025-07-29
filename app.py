@@ -247,6 +247,12 @@ def add_measurement(project_id):
     db.session.commit()
     return jsonify({'status': 'saved'})
 
+
+@app.route('/add_measurement_sheet', methods=['GET'])
+def add_measurement_sheet():
+    projects = Project.query.all()
+    return render_template('add_measurement_sheet.html', projects=projects)
+
 # ------------------- INITIALIZE DB -------------------
 with app.app_context():
     db.create_all()
