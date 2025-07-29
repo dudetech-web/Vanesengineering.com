@@ -58,11 +58,9 @@ def login():
             flash('Invalid username or password.', 'error')
     return render_template('login.html')
 
-
 @app.route('/dashboard')
 def dashboard():
     return render_template('dashboard.html')
-
 
 @app.route('/register_vendor', methods=['GET', 'POST'])
 def register_vendor():
@@ -79,7 +77,6 @@ def register_vendor():
             flash('Vendor name is required.', 'error')
         return redirect(url_for('register_vendor'))
     return render_template('register_vendor.html')
-
 
 @app.route('/new_project', methods=['GET', 'POST'])
 def new_project():
@@ -120,7 +117,6 @@ def new_project():
 
     return render_template('new_project.html', vendors=vendors, projects=projects)
 
-
 @app.route('/delete_project/<int:project_id>')
 def delete_project(project_id):
     proj = Project.query.get_or_404(project_id)
@@ -128,7 +124,6 @@ def delete_project(project_id):
     db.session.commit()
     flash('Project deleted!', 'success')
     return redirect(url_for('new_project'))
-
 
 @app.route('/update_project/<int:project_id>', methods=['POST'])
 def update_project(project_id):
@@ -145,13 +140,12 @@ def update_project(project_id):
     db.session.commit()
     return jsonify({'status': 'success'})
 
-
 @app.route('/cancel')
 def cancel():
     flash('Action cancelled.', 'info')
     return redirect(url_for('login'))
 
-# ------------------- INIT TABLES -------------------
+# ------------------- INITIALIZE DB -------------------
 with app.app_context():
     db.create_all()
     if not Vendor.query.first():
@@ -159,8 +153,6 @@ with app.app_context():
         db.session.add(Vendor(name="XYZ Ltd", gst="GST456", address="Bangalore"))
         db.session.commit()
 
-
 # ------------------- MAIN -------------------
-
 if __name__ == '__main__':
     app.run(debug=True)
