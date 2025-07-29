@@ -86,78 +86,79 @@
         <hr>
 
         <h5>Project List</h5>
-        <table class="table table-bordered table-striped mt-3">
-            <thead class="table-dark">
-                <tr>
-                    <th>Enquiry ID</th>
-                    <th>Quotation</th>
-                    <th>Start</th>
-                    <th>End</th>
-                    <th>Location</th>
-                    <th>Incharge</th>
-                    <th>Contact</th>
-                    <th>Email</th>
-                    <th>Notes</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for p in projects %}
-                <tr data-id="{{ p.id }}">
-                    <td>{{ p.enquiry_id }}</td>
-                    <td><input class="form-control form-control-sm" value="{{ p.quotation }}"></td>
-                    <td><input class="form-control form-control-sm" value="{{ p.start_date }}"></td>
-                    <td><input class="form-control form-control-sm" value="{{ p.end_date }}"></td>
-                    <td><input class="form-control form-control-sm" value="{{ p.location }}"></td>
-                    <td><input class="form-control form-control-sm" value="{{ p.incharge }}"></td>
-                    <td><input class="form-control form-control-sm" value="{{ p.contact }}"></td>
-                    <td><input class="form-control form-control-sm" value="{{ p.email }}"></td>
-                    <td><input class="form-control form-control-sm" value="{{ p.notes }}"></td>
-                    <td>
-                        <button class="btn btn-sm btn-success save-btn">Save</button>
-                        <a href="{{ url_for('delete_project', project_id=p.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this project?')">Delete</a>
-                        <button class="btn btn-sm btn-warning">Add Measurement Sheet</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
+        <table class="table table-bordered table-striped mt-4">
+    <thead class="table-dark">
+        <tr>
+            <th>Enquiry ID</th>
+            <th>Quotation</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Location</th>
+            <th>Project Incharge</th>
+            <th>Contact</th>
+            <th>Email</th>
+            <th>Notes</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for proj in projects %}
+        <tr data-id="{{ proj.id }}">
+            <td>{{ proj.enquiry_id }}</td>
+            <td contenteditable="true" class="editable" data-field="quotation">{{ proj.quotation }}</td>
+            <td contenteditable="true" class="editable" data-field="start_date">{{ proj.start_date }}</td>
+            <td contenteditable="true" class="editable" data-field="end_date">{{ proj.end_date }}</td>
+            <td contenteditable="true" class="editable" data-field="location">{{ proj.location }}</td>
+            <td contenteditable="true" class="editable" data-field="incharge">{{ proj.incharge }}</td>
+            <td contenteditable="true" class="editable" data-field="contact">{{ proj.contact }}</td>
+            <td contenteditable="true" class="editable" data-field="email">{{ proj.email }}</td>
+            <td contenteditable="true" class="editable" data-field="notes">{{ proj.notes }}</td>
+            <td>
+                <button class="btn btn-sm btn-success save-btn">Edit</button>
+                <a href="{{ url_for('delete_project', project_id=proj.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this project?')">Delete</a>
+                <a href="#" class="btn btn-sm btn-primary">Add Measurement Sheet</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
         </table>
 
     </div>
 
     <script>
-        document.getElementById('vendorSelect').addEventListener('change', function () {
-            let selected = this.options[this.selectedIndex];
-            document.getElementById('gstInput').value = selected.dataset.gst || '';
-            document.getElementById('addressInput').value = selected.dataset.address || '';
-        });
+    document.getElementById('vendorSelect').addEventListener('change', function () {
+        let selected = this.options[this.selectedIndex];
+        document.getElementById('gstInput').value = selected.dataset.gst || '';
+        document.getElementById('addressInput').value = selected.dataset.address || '';
+    });
 
-        document.querySelectorAll('.save-btn').forEach(btn => {
-            btn.addEventListener('click', function () {
-                let row = this.closest('tr');
-                let id = row.dataset.id;
-                let data = {
-                    quotation: row.children[1].firstElementChild.value,
-                    start_date: row.children[2].firstElementChild.value,
-                    end_date: row.children[3].firstElementChild.value,
-                    location: row.children[4].firstElementChild.value,
-                    incharge: row.children[5].firstElementChild.value,
-                    contact: row.children[6].firstElementChild.value,
-                    email: row.children[7].firstElementChild.value,
-                    notes: row.children[8].firstElementChild.value
-                };
+    document.querySelectorAll('.save-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            let row = this.closest('tr');
+            let id = row.dataset.id;
 
-                fetch(`/update_project/${id}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                }).then(res => res.json())
-                  .then(res => {
-                    if (res.status === 'success') alert('Updated successfully!');
-                    else alert('Update failed!');
-                });
+            let data = {
+                quotation: row.children[1].textContent.trim(),
+                start_date: row.children[2].textContent.trim(),
+                end_date: row.children[3].textContent.trim(),
+                location: row.children[4].textContent.trim(),
+                incharge: row.children[5].textContent.trim(),
+                contact: row.children[6].textContent.trim(),
+                email: row.children[7].textContent.trim(),
+                notes: row.children[8].textContent.trim()
+            };
+
+            fetch(`/update_project/${id}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            }).then(res => res.json())
+              .then(res => {
+                if (res.status === 'success') alert('Updated successfully!');
+                else alert('Update failed!');
             });
         });
+    });
     </script>
 </body>
 </html>
