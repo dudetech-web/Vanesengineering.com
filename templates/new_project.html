@@ -116,7 +116,7 @@
             <td>
                 <button class="btn btn-sm btn-success save-btn">Edit</button>
                 <a href="{{ url_for('delete_project', project_id=proj.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this project?')">Delete</a>
-                <a href="#" class="btn btn-sm btn-primary">Add Measurement Sheet</a>
+                <a href="{{ url_for('add_measurement_sheet') }}" class="btn btn-sm btn-primary">Add Measurement Sheet</a>
             </td>
         </tr>
         {% endfor %}
