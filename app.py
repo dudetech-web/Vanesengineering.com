@@ -82,11 +82,13 @@ def register_vendor():
 def new_project():
     vendors = Vendor.query.all()
     projects = Project.query.all()
+    enquiry_id_created = None  # initialize this variable
 
     if request.method == 'POST':
         vendor_id = request.form['vendor_id']
         count = Project.query.count() + 1
         enquiry_id = f"VE/TN/2526/E{str(count).zfill(3)}"
+        enquiry_id_created = enquiry_id  # store for display
 
         file = request.files.get('drawing')
         filename = None
@@ -113,9 +115,13 @@ def new_project():
         db.session.add(project)
         db.session.commit()
         flash('Project saved successfully!', 'success')
-        return redirect(url_for('new_project'))
+
+        # Don't redirect — just re-render with the new ID
+        return render_template('new_project.html', vendors=vendors, projects=projects, enquiry_id_created=enquiry_id_created)
 
     return render_template('new_project.html', vendors=vendors, projects=projects)
+
+
 
 @app.route('/delete_project/<int:project_id>')
 def delete_project(project_id):
