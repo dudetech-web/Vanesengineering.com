@@ -2,152 +2,122 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Measurement Sheet</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        .hide { display: none; }
-        .table td input { width: 100%; }
-    </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 </head>
-<body class="p-4">
+<body>
+<div class="container py-4">
+    <h2 class="mb-4">Add Measurement Sheet</h2>
     <div class="row">
-        <!-- Left Side -->
+        <!-- Left Panel -->
         <div class="col-md-6">
             <h5>AutoCAD Viewer</h5>
-            <input type="file" id="tagFile" class="form-control mb-2">
-            <div id="filePreview" class="mt-2"></div>
-            <hr>
-            <h6>Revised Tag File</h6>
-            <input type="file" id="revisedFile" class="form-control">
+            <input type="file" class="form-control mb-2" id="cadFile">
+            <h6>Revised File Preview</h6>
+            <img id="previewImage" src="#" alt="Preview" class="img-fluid border" style="display:none;">
         </div>
 
-        <!-- Right Side -->
+        <!-- Right Panel - Form -->
         <div class="col-md-6">
-            <h5>Duct Entry Form</h5>
-            <div class="form-row">
-                <input class="form-control col" placeholder="Duct No" id="ductNo">
-                <select class="form-control col" id="ductType">
-                    <option value="">Type</option>
-                    <option value="st">st</option>
-                    <option value="elb">elb</option>
-                    <option value="red">red</option>
-                    <option value="dm">dm</option>
-                    <option value="offset">offset</option>
-                    <option value="shoe">shoe</option>
-                    <option value="vanes">vanes</option>
-                </select>
-                <input class="form-control col" placeholder="w1" id="w1">
-                <input class="form-control col" placeholder="h1" id="h1">
-                <input class="form-control col" placeholder="w2" id="w2">
-                <input class="form-control col" placeholder="h2" id="h2">
-            </div>
-            <div class="form-row mt-2">
-                <input class="form-control col" placeholder="Length/Radius" id="lengthRadius">
-                <input class="form-control col" placeholder="Offset/Degree" id="offsetDegree">
-                <input class="form-control col" placeholder="Quantity" id="quantity">
-                <input class="form-control col hide" placeholder="Factor" id="factor">
-            </div>
-            <button class="btn btn-primary mt-2" id="addEntryBtn">Add Duct Entry</button>
+            <form id="ductForm">
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <label>Duct No</label>
+                        <input type="text" class="form-control" name="duct_no" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Duct Type</label>
+                        <select class="form-control" name="duct_type" id="duct_type" required>
+                            <option value="">Select</option>
+                            <option value="st">ST</option>
+                            <option value="elb">ELB</option>
+                            <option value="red">RED</option>
+                            <option value="dm">DM</option>
+                            <option value="offset">OFFSET</option>
+                            <option value="shoe">SHOE</option>
+                            <option value="vanes">VANES</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3"><label>W1</label><input type="number" class="form-control" name="w1"></div>
+                    <div class="col-md-3"><label>H1</label><input type="number" class="form-control" name="h1"></div>
+                    <div class="col-md-3"><label>W2</label><input type="number" class="form-control" name="w2"></div>
+                    <div class="col-md-3"><label>H2</label><input type="number" class="form-control" name="h2"></div>
+                    <div class="col-md-6"><label>Length / Radius</label><input type="number" class="form-control" name="length"></div>
+                    <div class="col-md-6"><label>Offset / Degree</label><input type="number" class="form-control" name="degree"></div>
+                    <div class="col-md-6"><label>Quantity</label><input type="number" class="form-control" name="quantity" required></div>
+                    <div class="col-md-6"><label>Factor</label><input type="number" step="0.01" class="form-control" name="factor" id="factor"></div>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Add Duct Entry</button>
+            </form>
         </div>
     </div>
 
-    <hr>
-    <h5 class="mt-4">Live Table</h5>
-    <table class="table table-bordered" id="ductTable">
-        <thead class="thead-light">
-            <tr>
-                <th>Duct No</th>
-                <th>Duct Type</th>
-                <th>w1</th>
-                <th>h1</th>
-                <th>w2</th>
-                <th>h2</th>
-                <th>Length/Radius</th>
-                <th>Offset/Degree</th>
-                <th>Quantity</th>
-                <th>Factor</th>
-                <th>Area</th>
-                <th>Gauge</th>
-                <th>24g</th>
-                <th>22g</th>
-                <th>20g</th>
-                <th>18g</th>
-                <th>Gasket</th>
-                <th>Corner</th>
-                <th>Cleat</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody id="tableBody">
-            <!-- JS will populate this -->
-        </tbody>
-    </table>
+    <!-- Table Display -->
+    <div class="mt-5">
+        <h5>Live Duct Table</h5>
+        <table class="table table-bordered" id="ductTable">
+            <thead class="table-light">
+                <tr>
+                    <th>Duct No</th>
+                    <th>Duct Type</th>
+                    <th>W1</th>
+                    <th>H1</th>
+                    <th>W2</th>
+                    <th>H2</th>
+                    <th>Length</th>
+                    <th>Degree</th>
+                    <th>Qty</th>
+                    <th>Factor</th>
+                    <th>Area</th>
+                    <th>Gauge</th>
+                    <th>24g</th>
+                    <th>22g</th>
+                    <th>20g</th>
+                    <th>18g</th>
+                    <th>Gasket</th>
+                    <th>Corner Pieces</th>
+                    <th>Cleat</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="ductTableBody">
+                <!-- Entries will be appended here -->
+            </tbody>
+        </table>
 
-    <script>
-        // Show/hide factor field
-        document.getElementById('ductType').addEventListener('change', function () {
-            const typesWithFactor = ['elb', 'red', 'offset', 'shoe'];
-            const factorField = document.getElementById('factor');
-            factorField.classList.toggle('hide', !typesWithFactor.includes(this.value));
-        });
+        <div class="d-flex gap-2">
+            <button class="btn btn-secondary" onclick="window.print()">Print</button>
+            <button class="btn btn-success" onclick="exportToExcel()">Export to Excel</button>
+            <button class="btn btn-danger" onclick="exportToPDF()">Export to PDF</button>
+            <button class="btn btn-primary">Submit</button>
+        </div>
+    </div>
+</div>
 
-        // Add entry to live table
-        document.getElementById('addEntryBtn').addEventListener('click', function () {
-            const row = document.createElement('tr');
-            const values = [
-                'ductNo', 'ductType', 'w1', 'h1', 'w2', 'h2',
-                'lengthRadius', 'offsetDegree', 'quantity', 'factor'
-            ];
-            const data = {};
-            values.forEach(id => {
-                data[id] = document.getElementById(id).value || '';
-            });
+<script>
+    document.getElementById('cadFile').addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                const img = document.getElementById('previewImage');
+                img.src = event.target.result;
+                img.style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+        }
+    });
 
-            // Fake area/gauge/gasket/corner/cleat for now
-            const extra = {
-                area: '—', gauge: '—', g24: '—', g22: '—', g20: '—', g18: '—',
-                gasket: '—', corner: '—', cleat: '—'
-            };
+    function exportToExcel() {
+        let wb = XLSX.utils.table_to_book(document.getElementById('ductTable'), {sheet:"Sheet1"});
+        XLSX.writeFile(wb, 'measurement_sheet.xlsx');
+    }
 
-            const allData = { ...data, ...extra };
-
-            Object.values(allData).forEach(val => {
-                const td = document.createElement('td');
-                td.innerHTML = `<input value="${val}" />`;
-                row.appendChild(td);
-            });
-
-            // Actions
-            const actions = document.createElement('td');
-            actions.innerHTML = `
-                <button class="btn btn-sm btn-success edit">Edit</button>
-                <button class="btn btn-sm btn-danger delete">Delete</button>
-            `;
-            row.appendChild(actions);
-
-            // Delete functionality
-            actions.querySelector('.delete').addEventListener('click', () => {
-                if (confirm("Delete this row?")) row.remove();
-            });
-
-            // Edit functionality
-            actions.querySelector('.edit').addEventListener('click', () => {
-                const inputs = row.querySelectorAll('input');
-                inputs.forEach(input => input.removeAttribute('readonly'));
-            });
-
-            document.getElementById('tableBody').appendChild(row);
-
-            // Reset form
-            values.forEach(id => document.getElementById(id).value = '');
-            document.getElementById('factor').classList.add('hide');
-        });
-
-        // File preview (optional)
-        document.getElementById('tagFile').addEventListener('change', function () {
-            const fileName = this.files[0]?.name || '';
-            document.getElementById('filePreview').innerText = `Selected file: ${fileName}`;
-        });
-    </script>
+    function exportToPDF() {
+        window.alert('PDF export feature will be implemented separately.');
+    }
+</script>
 </body>
 </html>
