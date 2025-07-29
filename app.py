@@ -251,8 +251,18 @@ def add_measurement(project_id):
 @app.route('/add_measurement_sheet', methods=['GET'])
 def add_measurement_sheet():
     projects = Project.query.all()
-    return render_template('add_measurement_sheet.html', projects=projects)
+    selected_project_id = request.args.get('project_id', type=int)
+    measurements = []
 
+    if selected_project_id:
+        measurements = Measurement.query.filter_by(project_id=selected_project_id).all()
+
+    return render_template(
+        'add_measurement_sheet.html',
+        projects=projects,
+        selected_project_id=selected_project_id,
+        measurements=measurements
+    )
 # ------------------- INITIALIZE DB -------------------
 with app.app_context():
     db.create_all()
