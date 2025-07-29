@@ -152,14 +152,13 @@ def cancel():
     return redirect(url_for('login'))
 
 # ------------------- INIT TABLES -------------------
-
-@app.before_first_request
-def create_tables():
+with app.app_context():
     db.create_all()
     if not Vendor.query.first():
         db.session.add(Vendor(name="ABC Corp", gst="GST123", address="Chennai"))
         db.session.add(Vendor(name="XYZ Ltd", gst="GST456", address="Bangalore"))
         db.session.commit()
+
 
 # ------------------- MAIN -------------------
 
