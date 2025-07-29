@@ -18,8 +18,9 @@
             <div class="row">
                 <div class="col-md-3">
     <label>Enquiry ID</label>
-    <input type="text" class="form-control" value="{{ enquiry_id_created or 'Will be auto-generated' }}" disabled>
+    <input type="text" class="form-control" name="enquiry_id" value="{{ enquiry_id_created }}" readonly>
                 </div>
+                
                 <div class="col-md-3">
                     <label>Quotation</label>
                     <input type="text" name="quotation" class="form-control">
