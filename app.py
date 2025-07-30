@@ -184,10 +184,6 @@ def calculate_area_and_gauge(data):
 # ------------------- ROUTES -------------------
 
 # --- Auto-migrate on first request (TEMPORARY for Render) ---
-@app.before_serving
-def apply_migrations():
-    from flask_migrate import upgrade
-    upgrade()
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -527,16 +523,13 @@ def export_pdf():
 
 
 # ------------------- INITIALIZE DB -------------------
-with app.app_context():
-    db.create_all()
-    if not Vendor.query.first():
-        db.session.add(Vendor(name="ABC Corp", gst="GST123", address="Chennai"))
-        db.session.add(Vendor(name="XYZ Ltd", gst="GST456", address="Bangalore"))
-        db.session.commit()
+# ------------------- AUTO-MIGRATE ON RENDER -------------------
+if os.environ.get("RENDER") == "true":
+    with app.app_context():
+        from flask_migrate import upgrade
+        upgrade()
+
 
 # ------------------- MAIN -------------------
 if __name__ == "__main__":
-    from flask_migrate import upgrade
-    with app.app_context():
-        upgrade()  # Run migrations on app start
     app.run(debug=True)
