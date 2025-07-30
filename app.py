@@ -10,6 +10,9 @@ from io import BytesIO
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from flask_migrate import Migrate
+from flask_migrate import init, migrate, upgrade, stamp
+from alembic.config import Config
+import shutil
 
 
 app = Flask(__name__)
@@ -526,10 +529,7 @@ def export_pdf():
 # ------------------- AUTO-MIGRATE ON RENDER -------------------
 
 # ------------------- AUTO MIGRATION INIT (MOBILE FRIENDLY) -------------------
-import os
-from flask_migrate import init, migrate, upgrade, stamp
-from alembic.config import Config
-import shutil
+
 
 def auto_run_migrations():
     migrations_dir = os.path.join(os.path.dirname(__file__), 'migrations')
