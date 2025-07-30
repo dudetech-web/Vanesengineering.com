@@ -524,12 +524,30 @@ def export_pdf():
 
 # ------------------- INITIALIZE DB -------------------
 # ------------------- AUTO-MIGRATE ON RENDER -------------------
-if os.environ.get("RENDER") == "true":
-    with app.app_context():
-        from flask_migrate import upgrade
-        upgrade()
+
+# ------------------- AUTO MIGRATION INIT (MOBILE FRIENDLY) -------------------
+import os
+from flask_migrate import init, migrate, upgrade, stamp
+from alembic.config import Config
+import shutil
+
+def auto_run_migrations():
+    migrations_dir = os.path.join(os.path.dirname(__file__), 'migrations')
+    if not os.path.exists(migrations_dir):
+        # Create an Alembic configuration object programmatically
+        cfg = Config()
+        cfg.set_main_option("script_location", "migrations")
+        cfg.set_main_option("sqlalchemy.url", app.config["SQLALCHEMY_DATABASE_URI"])
+
+        # Initialize migrations folder
+        init(directory=migrations_dir)
+        stamp(directory=migrations_dir, revision="head")  # Mark DB as current
+        migrate(directory=migrations_dir, message="Initial migration")
+    upgrade(directory=migrations_dir)  # Apply the migration
+
+with app.app_context():
+    auto_run_migrations()
 
 
-# ------------------- MAIN -------------------
 if __name__ == "__main__":
     app.run(debug=True)
