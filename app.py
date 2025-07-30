@@ -302,6 +302,59 @@ def delete_measurement(measurement_id):
     db.session.delete(measurement)
     db.session.commit()
     return jsonify({'status': 'deleted'})
+
+
+@app.route('/get_measurement/<int:id>')
+def get_measurement(id):
+    m = Measurement.query.get_or_404(id)
+    return jsonify({
+        'id': m.id,
+        'duct_no': m.duct_no,
+        'duct_type': m.duct_type,
+        'w1': m.w1,
+        'h1': m.h1,
+        'w2': m.w2,
+        'h2': m.h2,
+        'length': m.length,
+        'degree': m.degree,
+        'quantity': m.quantity,
+        'factor': m.factor
+    })
+
+
+@app.route('/update_measurement/<int:id>', methods=['PUT'])
+def update_measurement(id):
+    data = request.get_json()
+    m = Measurement.query.get_or_404(id)
+
+    m.duct_no = data['duct_no']
+    m.duct_type = data['duct_type']
+    m.w1 = data.get('w1', 0)
+    m.h1 = data.get('h1', 0)
+    m.w2 = data.get('w2', 0)
+    m.h2 = data.get('h2', 0)
+    m.length = data.get('length', 0)
+    m.degree = data.get('degree', 0)
+    m.quantity = data.get('quantity', 1)
+    m.factor = data.get('factor', 1)
+
+    # Recalculate area, gauge, etc.
+    area, gauge, g24, g22, g20, g18, gasket, corner_pieces, cleat = calculate_area_and_gauge(data)
+    m.area = area
+    m.gauge = gauge
+    m.g24 = g24
+    m.g22 = g22
+    m.g20 = g20
+    m.g18 = g18
+    m.gasket = gasket
+    m.corner_pieces = corner_pieces
+    m.cleat = cleat
+
+    db.session.commit()
+    return jsonify({'status': 'updated'})
+
+
+
 # ------------------- INITIALIZE DB -------------------
 with app.app_context():
     db.create_all()
