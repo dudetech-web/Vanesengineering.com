@@ -80,33 +80,33 @@
                 </tr>
             </thead>
             <tbody id="ductTableBody">
-                {% for m in measurements %}
-                <tr>
-                    <td>{{ m.duct_no }}</td>
-                    <td>{{ m.duct_type }}</td>
-                    <td>{{ m.w1 }}</td>
-                    <td>{{ m.h1 }}</td>
-                    <td>{{ m.w2 }}</td>
-                    <td>{{ m.h2 }}</td>
-                    <td>{{ m.length }}</td>
-                    <td>{{ m.degree }}</td>
-                    <td>{{ m.quantity }}</td>
-                    <td>{{ m.factor }}</td>
-                    <td>{{ "%.2f"|format(m.area) }}</td>
-                    <td>{{ m.gauge }}</td>
-                    <td>{{ m.g24 }}</td>
-                    <td>{{ m.g22 }}</td>
-                    <td>{{ m.g20 }}</td>
-                    <td>{{ m.g18 }}</td>
-                    <td>{{ m.gasket }}</td>
-                    <td>{{ m.corner_pieces }}</td>
-                    <td>{{ m.cleat }}</td>
-                    <td>
-    <button class="btn btn-sm btn-warning" onclick="editMeasurement({{ m.id }})">Edit</button>
-    <button class="btn btn-sm btn-danger" onclick="deleteMeasurement({{ m.id }})">Delete</button>
-                    </td>
-                </tr>
-                {% endfor %}
+  {% for m in measurements %}
+    <tr>
+        <td>{{ m.duct_no }}</td>
+        <td>{{ m.duct_type }}</td>
+        <td>{{ m.w1 }}</td>
+        <td>{{ m.h1 }}</td>
+        <td>{{ m.w2 }}</td>
+        <td>{{ m.h2 }}</td>
+        <td>{{ m.length }}</td>
+        <td>{{ m.degree }}</td>
+        <td>{{ m.quantity }}</td>
+        <td>{{ m.factor }}</td>
+        <td>{{ m.area }}</td>
+        <td>{{ m.gauge }}</td>
+        <td>{{ m.g24 }}</td>
+        <td>{{ m.g22 }}</td>
+        <td>{{ m.g20 }}</td>
+        <td>{{ m.g18 }}</td>
+        <td>{{ m.gasket }}</td>
+        <td>{{ m.corner_pieces }}</td>
+        <td>{{ m.cleat }}</td>
+        <td>
+            <button class="btn btn-sm btn-warning" onclick="editMeasurement({{ m.id }})">Edit</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteMeasurement({{ m.id }})">Delete</button>
+        </td>
+    </tr>
+  {% endfor %}
             </tbody>
         </table>
 
