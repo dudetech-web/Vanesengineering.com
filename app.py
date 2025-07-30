@@ -535,5 +535,8 @@ with app.app_context():
         db.session.commit()
 
 # ------------------- MAIN -------------------
-if __name__ == '__main__':
+if __name__ == "__main__":
+    from flask_migrate import upgrade
+    with app.app_context():
+        upgrade()  # Run migrations on app start
     app.run(debug=True)
