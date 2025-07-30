@@ -183,6 +183,13 @@ def calculate_area_and_gauge(data):
     return area_m2, gauge, g24, g22, g20, g18, gasket, corner_pieces, cleat
 # ------------------- ROUTES -------------------
 
+# --- Auto-migrate on first request (TEMPORARY for Render) ---
+@app.before_first_request
+def apply_migrations():
+    from flask_migrate import upgrade
+    upgrade()
+
+
 @app.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
