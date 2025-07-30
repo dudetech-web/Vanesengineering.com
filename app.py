@@ -531,23 +531,30 @@ def export_pdf():
 # ------------------- AUTO MIGRATION INIT (MOBILE FRIENDLY) -------------------
 
 
-def auto_run_migrations():
+
+
+
+# ------------------- MIGRATION SETUP -------------------
+def run_migrations_once():
+    import os
+    import shutil
+    from flask_migrate import init, migrate, upgrade, stamp
+
     migrations_dir = os.path.join(os.path.dirname(__file__), 'migrations')
-    if not os.path.exists(migrations_dir):
-        # Create an Alembic configuration object programmatically
-        cfg = Config()
-        cfg.set_main_option("script_location", "migrations")
-        cfg.set_main_option("sqlalchemy.url", app.config["SQLALCHEMY_DATABASE_URI"])
 
-        # Initialize migrations folder
-        init(directory=migrations_dir)
-        stamp(directory=migrations_dir, revision="head")  # Mark DB as current
-        migrate(directory=migrations_dir, message="Initial migration")
-    upgrade(directory=migrations_dir)  # Apply the migration
+    # If 'migrations/' exists but broken, delete it
+    if os.path.exists(migrations_dir):
+        shutil.rmtree(migrations_dir)
 
-with app.app_context():
-    auto_run_migrations()
+    # Recreate clean migration setup
+    init()  # Create new migrations folder
+    stamp()  # Mark database as up-to-date (avoid revision mismatch)
+    migrate(message="Initial migration")  # Create new migration file
+    upgrade()  # Apply the migration
 
 
+# ------------------- MAIN -------------------
 if __name__ == "__main__":
+    with app.app_context():
+        run_migrations_once()  # Run only once on start
     app.run(debug=True)
