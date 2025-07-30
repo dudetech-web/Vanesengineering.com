@@ -71,6 +71,8 @@ class Measurement(db.Model):
 
 # ------------------- CALCULATION FUNCTION -------------------
 
+import math
+
 def calculate_area_and_gauge(data):
     w1 = float(data.get('w1', 0))
     h1 = float(data.get('h1', 0))
@@ -82,44 +84,53 @@ def calculate_area_and_gauge(data):
     factor = float(data.get('factor', 1))
     duct_type = data.get('duct_type', '').lower()
 
-    area = 0
+    area_m2 = 0
 
     if duct_type == 'st':
-        area = 2 * (w1 + h1) / 1000 * (length / 1000) * qty
+        area_m2 = 2 * (w1 + h1) / 1000 * (length / 1000) * qty
     elif duct_type == 'red':
-        area = (w1 + h1 + w2 + h2) / 1000 * (length / 1000) * qty * factor
+        area_m2 = (w1 + h1 + w2 + h2) / 1000 * (length / 1000) * qty * factor
     elif duct_type == 'dm':
-        area = (w1 / 1000 + h1 / 1000) * qty
+        area_m2 = (w1 * h1) / 1_000_000 * qty
     elif duct_type == 'offset':
-        area = (w1 + h1 + w2 + h2) / 1000 * ((length + degree) / 1000) * qty * factor
+        area_m2 = (w1 + h1 + w2 + h2) / 1000 * ((length + degree) / 1000) * qty * factor
     elif duct_type == 'shoe':
-        area = (w1 + h1) * 2 / 1000 * (length / 1000) * qty * factor
+        area_m2 = (w1 + h1) * 2 / 1000 * (length / 1000) * qty * factor
     elif duct_type == 'vanes':
-        area = (w1 / 1000) * (2 * math.pi * (w1 / 1000) / 4) * qty
+        area_m2 = (w1 / 1000) * (2 * math.pi * (w1 / 1000) / 4) * qty
     elif duct_type == 'elb':
-        area = 2 * (w1 + h1) / 1000 * ((h1 / 2) / 1000 + (length / 1000) * math.pi * (degree / 180)) * qty * factor
+        area_m2 = 2 * (w1 + h1) / 1000 * (((h1 / 2) / 1000) + (length / 1000) * math.pi * (degree / 180)) * qty * factor
 
-    if area <= 0.75:
+    # Convert m² to mm² for gauge classification
+    
+
+    if area <= 751:
         gauge = '24g'
-    elif area <= 1.20:
+    elif area <= 1201:
         gauge = '22g'
-    elif area <= 1.80:
+    elif area  <= 1800:
         gauge = '20g'
     else:
         gauge = '18g'
 
-    g24 = area if gauge == '24g' else 0
-    g22 = area if gauge == '22g' else 0
-    g20 = area if gauge == '20g' else 0
-    g18 = area if gauge == '18g' else 0
+    g24 = area_m2 if gauge == '24g' else 0
+    g22 = area_m2 if gauge == '22g' else 0
+    g20 = area_m2 if gauge == '20g' else 0
+    g18 = area_m2 if gauge == '18g' else 0
 
-    # Final formula (based on image you sent):
-    gasket = qty * 2
-    corner_pieces = qty * 4
-    cleat = qty * 1.2
+    gasket = (w1 + w2 + h1 + h2) / 1000 * qty
+    corner_pieces = 0 if duct_type == 'dm' else 8
+    cleat = 0
+    if gauge == '24g':
+        cleat = qty * 12
+    elif gauge == '22g':
+        cleat = qty * 10
+    elif gauge == '20g':
+        cleat = qty * 8
+    elif gauge == '18g':
+        cleat = qty * 4
 
-    return area, gauge, g24, g22, g20, g18, gasket, corner_pieces, cleat
-
+    return area_m2, gauge, g24, g22, g20, g18, gasket, corner_pieces, cleat
 # ------------------- ROUTES -------------------
 
 @app.route('/', methods=['GET', 'POST'])
