@@ -76,6 +76,14 @@ class Measurement(db.Model):
     corner_pieces = db.Column(db.Integer)
     cleat = db.Column(db.Float)
 
+    # 🖋 Signature Fields
+    prepared_by = db.Column(db.String(100))
+    prepared_at = db.Column(db.DateTime)
+    verified_by = db.Column(db.String(100))
+    verified_at = db.Column(db.DateTime)
+    approved_by = db.Column(db.String(100))
+    approved_at = db.Column(db.DateTime)
+
 
 
 
