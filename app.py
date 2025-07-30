@@ -294,6 +294,14 @@ def add_measurement_sheet():
         selected_project_id=selected_project_id,
         measurements=measurements
     )
+
+
+@app.route('/delete_measurement/<int:measurement_id>', methods=['DELETE'])
+def delete_measurement(measurement_id):
+    measurement = Measurement.query.get_or_404(measurement_id)
+    db.session.delete(measurement)
+    db.session.commit()
+    return jsonify({'status': 'deleted'})
 # ------------------- INITIALIZE DB -------------------
 with app.app_context():
     db.create_all()
