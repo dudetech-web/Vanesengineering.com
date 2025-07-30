@@ -76,7 +76,7 @@
                 <tr>
                     <th>Duct No</th><th>Duct Type</th><th>W1</th><th>H1</th><th>W2</th><th>H2</th><th>Length</th>
                     <th>Degree</th><th>Qty</th><th>Factor</th><th>Area</th><th>Gauge</th>
-                    <th>24g</th><th>22g</th><th>20g</th><th>18g</th><th>Gasket</th><th>Corner Pieces</th><th>Cleat</th>
+                    <th>24g</th><th>22g</th><th>20g</th><th>18g</th><th>Gasket</th><th>Corner Pieces</th><th>Cleat</th><th>Actions</th> <!-- ✅ Add this at the end -->
                 </tr>
             </thead>
             <tbody id="ductTableBody">
@@ -101,6 +101,10 @@
                     <td>{{ m.gasket }}</td>
                     <td>{{ m.corner_pieces }}</td>
                     <td>{{ m.cleat }}</td>
+                    <td>
+    <button class="btn btn-sm btn-warning" onclick="editMeasurement({{ m.id }})">Edit</button>
+    <button class="btn btn-sm btn-danger" onclick="deleteMeasurement({{ m.id }})">Delete</button>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -172,5 +176,31 @@
         alert('PDF export coming soon');
     }
 </script>
+    <script>
+function deleteMeasurement(id) {
+    if (confirm("Are you sure you want to delete this entry?")) {
+        fetch(`/delete_measurement/${id}`, {
+            method: 'DELETE'
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'deleted') {
+                location.reload();
+            } else {
+                alert('Delete failed');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Error deleting data');
+        });
+    }
+}
+
+function editMeasurement(id) {
+    alert("Edit function coming soon for ID: " + id);
+    // Later you can open a modal and populate form for editing
+}
+    </script>
 </body>
 </html>
