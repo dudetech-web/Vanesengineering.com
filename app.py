@@ -4,7 +4,6 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
 from datetime import datetime
-from models import db, Employee
 import pandas as pd
 from flask import send_file
 from io import BytesIO
