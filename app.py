@@ -184,7 +184,7 @@ def calculate_area_and_gauge(data):
 # ------------------- ROUTES -------------------
 
 # --- Auto-migrate on first request (TEMPORARY for Render) ---
-@app.before_first_request
+@app.before_serving
 def apply_migrations():
     from flask_migrate import upgrade
     upgrade()
