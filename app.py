@@ -71,7 +71,7 @@ class Measurement(db.Model):
 
 # ------------------- CALCULATION FUNCTION -------------------
 
-import math
+
 
 def calculate_area_and_gauge(data):
     w1 = float(data.get('w1', 0))
