@@ -215,39 +215,58 @@ def update_project(project_id):
     db.session.commit()
     return jsonify({'status': 'success'})
 
+
 @app.route('/add_measurement/<int:project_id>', methods=['POST'])
 def add_measurement(project_id):
     data = request.get_json()
+    print("Received data:", data)  # Debug
 
-    area, gauge, g24, g22, g20, g18, gasket, corner_pieces, cleat = calculate_area_and_gauge(data)
+    try:
+        # Safe numeric parsing
+        w1 = float(data.get('w1') or 0)
+        h1 = float(data.get('h1') or 0)
+        w2 = float(data.get('w2') or 0)
+        h2 = float(data.get('h2') or 0)
+        length = float(data.get('length') or 0)
+        degree = float(data.get('degree') or 0)
+        quantity = int(data.get('quantity') or 1)
+        factor = float(data.get('factor') or 1)
 
-    measurement = Measurement(
-        project_id=project_id,
-        duct_no=data['duct_no'],
-        duct_type=data['duct_type'],
-        w1=data['w1'],
-        h1=data['h1'],
-        w2=data['w2'],
-        h2=data['h2'],
-        length=data['length'],
-        degree=data['degree'],
-        quantity=data['quantity'],
-        factor=data['factor'],
-        area=area,
-        gauge=gauge,
-        g24=g24,
-        g22=g22,
-        g20=g20,
-        g18=g18,
-        gasket=gasket,
-        corner_pieces=corner_pieces,
-        cleat=cleat
-    )
-    db.session.add(measurement)
-    db.session.commit()
-    return jsonify({'status': 'saved'})
+        area, gauge, g24, g22, g20, g18, gasket, corner_pieces, cleat = calculate_area_and_gauge({
+            **data,
+            'w1': w1, 'h1': h1, 'w2': w2, 'h2': h2,
+            'length': length, 'degree': degree,
+            'quantity': quantity, 'factor': factor
+        })
 
-
+        measurement = Measurement(
+            project_id=project_id,
+            duct_no=data['duct_no'],
+            duct_type=data['duct_type'],
+            w1=w1,
+            h1=h1,
+            w2=w2,
+            h2=h2,
+            length=length,
+            degree=degree,
+            quantity=quantity,
+            factor=factor,
+            area=area,
+            gauge=gauge,
+            g24=g24,
+            g22=g22,
+            g20=g20,
+            g18=g18,
+            gasket=gasket,
+            corner_pieces=corner_pieces,
+            cleat=cleat
+        )
+        db.session.add(measurement)
+        db.session.commit()
+        return jsonify({'status': 'saved'})
+    except Exception as e:
+        print("Error:", e)
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 @app.route('/add_measurement_sheet', methods=['GET'])
 def add_measurement_sheet():
     projects = Project.query.all()
