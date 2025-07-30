@@ -197,10 +197,101 @@ function deleteMeasurement(id) {
     }
 }
 
-function editMeasurement(id) {
-    alert("Edit function coming soon for ID: " + id);
-    // Later you can open a modal and populate form for editing
-}
+
     </script>
+    <!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <form id="editForm" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editModalLabel">Edit Measurement Entry</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body row g-2">
+        <input type="hidden" name="id" id="edit_id">
+        <div class="col-md-6"><label>Duct No</label><input type="text" class="form-control" name="duct_no" id="edit_duct_no"></div>
+        <div class="col-md-6">
+          <label>Duct Type</label>
+          <select class="form-control" name="duct_type" id="edit_duct_type">
+            <option value="st">ST</option>
+            <option value="elb">ELB</option>
+            <option value="red">RED</option>
+            <option value="dm">DM</option>
+            <option value="offset">OFFSET</option>
+            <option value="shoe">SHOE</option>
+            <option value="vanes">VANES</option>
+          </select>
+        </div>
+        <div class="col-md-3"><label>W1</label><input type="number" class="form-control" name="w1" id="edit_w1"></div>
+        <div class="col-md-3"><label>H1</label><input type="number" class="form-control" name="h1" id="edit_h1"></div>
+        <div class="col-md-3"><label>W2</label><input type="number" class="form-control" name="w2" id="edit_w2"></div>
+        <div class="col-md-3"><label>H2</label><input type="number" class="form-control" name="h2" id="edit_h2"></div>
+        <div class="col-md-6"><label>Length / Radius</label><input type="number" class="form-control" name="length" id="edit_length"></div>
+        <div class="col-md-6"><label>Offset / Degree</label><input type="number" class="form-control" name="degree" id="edit_degree"></div>
+        <div class="col-md-6"><label>Quantity</label><input type="number" class="form-control" name="quantity" id="edit_quantity"></div>
+        <div class="col-md-6"><label>Factor</label><input type="number" step="0.01" class="form-control" name="factor" id="edit_factor"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+    <script>
+function editMeasurement(id) {
+    fetch(`/get_measurement/${id}`)
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("edit_id").value = data.id;
+        document.getElementById("edit_duct_no").value = data.duct_no;
+        document.getElementById("edit_duct_type").value = data.duct_type;
+        document.getElementById("edit_w1").value = data.w1;
+        document.getElementById("edit_h1").value = data.h1;
+        document.getElementById("edit_w2").value = data.w2;
+        document.getElementById("edit_h2").value = data.h2;
+        document.getElementById("edit_length").value = data.length;
+        document.getElementById("edit_degree").value = data.degree;
+        document.getElementById("edit_quantity").value = data.quantity;
+        document.getElementById("edit_factor").value = data.factor;
+
+        let modal = new bootstrap.Modal(document.getElementById('editModal'));
+        modal.show();
+    })
+    .catch(err => {
+        alert("Error fetching measurement data");
+        console.error(err);
+    });
+}
+
+document.getElementById("editForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    const id = document.getElementById("edit_id").value;
+    const formData = Object.fromEntries(new FormData(e.target).entries());
+
+    fetch(`/update_measurement/${id}`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(formData)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'updated') {
+            location.reload();
+        } else {
+            alert("Update failed");
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Something went wrong while updating.");
+    });
+});
+    </script>
+
+
+    
+
+    
 </body>
 </html>
