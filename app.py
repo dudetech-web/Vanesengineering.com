@@ -102,16 +102,19 @@ def calculate_area_and_gauge(data):
         area_m2 = 2 * (w1 + h1) / 1000 * (((h1 / 2) / 1000) + (length / 1000) * math.pi * (degree / 180)) * qty * factor
 
     # Convert m² to mm² for gauge classification
-    
+    area = area_m2 * 1_000_000  # mm²
 
     if area <= 751:
         gauge = '24g'
     elif area <= 1201:
         gauge = '22g'
-    elif area  <= 1800:
+    elif area <= 1800:
         gauge = '20g'
     else:
         gauge = '18g'
+    
+
+    
 
     g24 = area_m2 if gauge == '24g' else 0
     g22 = area_m2 if gauge == '22g' else 0
