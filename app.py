@@ -3,6 +3,14 @@ import math
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
+from datetime import datetime
+from models import db, Employee
+import pandas as pd
+from flask import send_file
+from io import BytesIO
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -68,6 +76,38 @@ class Measurement(db.Model):
     gasket = db.Column(db.Integer)
     corner_pieces = db.Column(db.Integer)
     cleat = db.Column(db.Float)
+
+
+
+
+class Employee(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.Date, default=datetime.utcnow)
+    emp_code = db.Column(db.String(20))
+    emp_name = db.Column(db.String(100))
+    father_name = db.Column(db.String(100))
+    dob = db.Column(db.Date)
+    doj = db.Column(db.Date)
+    designation = db.Column(db.String(100))
+    department = db.Column(db.String(100))
+    work_location = db.Column(db.String(100))
+    bank_name = db.Column(db.String(100))
+    account_no = db.Column(db.String(50))
+    ifsc = db.Column(db.String(20))
+    branch = db.Column(db.String(100))
+    contact_no = db.Column(db.String(15))
+    email = db.Column(db.String(100))
+    address = db.Column(db.Text)
+    aadhar_no = db.Column(db.String(20))
+    pan_no = db.Column(db.String(20))
+    blood_group = db.Column(db.String(5))
+    medical_conditions = db.Column(db.String(200))
+    emergency_contact_name = db.Column(db.String(100))
+    emergency_contact_no = db.Column(db.String(15))
+    reference_name = db.Column(db.String(100))
+    reference_contact = db.Column(db.String(15))
+    photo_filename = db.Column(db.String(100))
+    signature_filename = db.Column(db.String(100))
 
 # ------------------- CALCULATION FUNCTION -------------------
 
@@ -352,6 +392,121 @@ def update_measurement(id):
 
     db.session.commit()
     return jsonify({'status': 'updated'})
+
+
+
+
+
+@app.route('/employee_registration', methods=['GET', 'POST'])
+def employee_registration():
+    if request.method == 'POST':
+        data = request.form
+        photo = request.files.get('photo')
+        signature = request.files.get('signature')
+
+        photo_filename = secure_filename(photo.filename) if photo else None
+        signature_filename = secure_filename(signature.filename) if signature else None
+
+        if photo:
+            photo.save(os.path.join(app.config['UPLOAD_FOLDER'], photo_filename))
+        if signature:
+            signature.save(os.path.join(app.config['UPLOAD_FOLDER'], signature_filename))
+
+        employee = Employee(
+            date=datetime.strptime(data['date'], '%Y-%m-%d'),
+            emp_code=data['emp_code'],
+            emp_name=data['emp_name'],
+            father_name=data['father_name'],
+            dob=datetime.strptime(data['dob'], '%Y-%m-%d'),
+            doj=datetime.strptime(data['doj'], '%Y-%m-%d'),
+            designation=data['designation'],
+            department=data['department'],
+            work_location=data['work_location'],
+            bank_name=data['bank_name'],
+            account_no=data['account_no'],
+            ifsc=data['ifsc'],
+            branch=data['branch'],
+            contact_no=data['contact_no'],
+            email=data['email'],
+            address=data['address'],
+            aadhar_no=data['aadhar_no'],
+            pan_no=data['pan_no'],
+            blood_group=data['blood_group'],
+            medical_conditions=data['medical_conditions'],
+            emergency_contact_name=data['emergency_contact_name'],
+            emergency_contact_no=data['emergency_contact_no'],
+            reference_name=data['reference_name'],
+            reference_contact=data['reference_contact'],
+            photo_filename=photo_filename,
+            signature_filename=signature_filename
+        )
+        db.session.add(employee)
+        db.session.commit()
+        flash('Employee registered successfully!', 'success')
+        return redirect(url_for('employee_registration'))
+
+    return render_template('employee_registration.html')
+
+
+
+@app.route('/export_excel')
+def export_excel():
+    employees = Employee.query.all()
+    data = [{
+        'Date': emp.date,
+        'Emp Code': emp.emp_code,
+        'Name': emp.emp_name,
+        'Father Name': emp.father_name,
+        'DOB': emp.dob,
+        'DOJ': emp.doj,
+        'Designation': emp.designation,
+        'Department': emp.department,
+        'Work Location': emp.work_location,
+        'Bank Name': emp.bank_name,
+        'Account No': emp.account_no,
+        'IFSC': emp.ifsc,
+        'Branch': emp.branch,
+        'Contact No': emp.contact_no,
+        'Email': emp.email,
+        'Address': emp.address,
+        'Aadhar No': emp.aadhar_no,
+        'PAN No': emp.pan_no,
+        'Blood Group': emp.blood_group,
+        'Medical Conditions': emp.medical_conditions,
+        'Emergency Contact Name': emp.emergency_contact_name,
+        'Emergency Contact No': emp.emergency_contact_no,
+        'Reference Name': emp.reference_name,
+        'Reference Contact': emp.reference_contact
+    } for emp in employees]
+
+    df = pd.DataFrame(data)
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        df.to_excel(writer, index=False, sheet_name='Employees')
+    output.seek(0)
+    return send_file(output, download_name="employee_data.xlsx", as_attachment=True)
+
+
+
+@app.route('/export_pdf')
+def export_pdf():
+    employees = Employee.query.all()
+    buffer = BytesIO()
+    c = canvas.Canvas(buffer, pagesize=A4)
+    width, height = A4
+    y = height - 40
+
+    for emp in employees:
+        c.setFont("Helvetica", 10)
+        c.drawString(40, y, f"{emp.emp_code} - {emp.emp_name}, Dept: {emp.department}, Ph: {emp.contact_no}")
+        y -= 20
+        if y < 60:
+            c.showPage()
+            y = height - 40
+
+    c.save()
+    buffer.seek(0)
+    return send_file(buffer, download_name='employee_data.pdf', as_attachment=True)
 
 
 
