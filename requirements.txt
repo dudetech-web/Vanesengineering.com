@@ -5,3 +5,4 @@ gunicorn
 Werkzeug
 pandas
 reportlab
+flask-migrate
