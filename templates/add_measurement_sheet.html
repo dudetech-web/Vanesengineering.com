@@ -117,24 +117,38 @@
 </div>
 
 <script>
-    const projectId = "{{ selected_project_id }}";
+    const projectId = "{{ selected_project_id or '' }}";
+    
 
     document.getElementById('ductForm').addEventListener('submit', function (e) {
-        e.preventDefault();
-        const form = e.target;
-        const data = Object.fromEntries(new FormData(form).entries());
-        fetch(`/add_measurement/${projectId}`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
-        }).then(res => res.json()).then(result => {
-            if (result.status === 'saved') {
-                location.reload();
-            } else {
-                alert('Error saving data');
-            }
-        });
+    e.preventDefault();
+
+    if (!projectId || projectId === "None") {
+        alert("Please select a project before adding entries.");
+        return;
+    }
+
+    const form = e.target;
+    const data = Object.fromEntries(new FormData(form).entries());
+
+    fetch(`/add_measurement/${projectId}`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(result => {
+        if (result.status === 'saved') {
+            location.reload();
+        } else {
+            alert('Error saving data');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Something went wrong while saving.');
     });
+});
 
     document.getElementById('cadFile').addEventListener('change', function (e) {
         const file = e.target.files[0];
