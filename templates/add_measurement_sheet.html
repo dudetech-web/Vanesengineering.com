@@ -109,6 +109,39 @@
   {% endfor %}
             </tbody>
         </table>
+        <!-- Signature Buttons Section -->
+<div class="mt-4 mb-4 text-center">
+  <button class="btn btn-primary me-2" onclick="showSignature('prepared')">Prepared By</button>
+  <button class="btn btn-warning me-2" onclick="showSignature('verified')">Verified By</button>
+  <button class="btn btn-success me-2" onclick="showSignature('approved')">Approved By</button>
+</div>
+
+<!-- Display Area -->
+<div id="signatureDisplay" class="text-center fw-bold" style="font-size: 1.1rem;"></div>
+
+<script>
+  function getCurrentDateTime() {
+    const now = new Date();
+    return now.toLocaleString(); // Format: e.g. "7/29/2025, 3:45:00 PM"
+  }
+
+  function showSignature(type) {
+    const signatureDisplay = document.getElementById('signatureDisplay');
+    const currentTime = getCurrentDateTime();
+
+    let message = '';
+    if (type === 'prepared') {
+      message = `✅ Prepared By: Design Engineer<br><small class="text-muted">Time: ${currentTime}</small>`;
+    } else if (type === 'verified') {
+      message = `📝 Verified By: Project Manager<br><small class="text-muted">Time: ${currentTime}</small>`;
+    } else if (type === 'approved') {
+      message = `🔏 Approved By: Managing Director<br><small class="text-muted">Time: ${currentTime}</small>`;
+    }
+
+    signatureDisplay.innerHTML = message;
+  }
+</script>
+        
 
         <div class="d-flex gap-2">
             <button class="btn btn-secondary" onclick="window.print()">Print</button>
