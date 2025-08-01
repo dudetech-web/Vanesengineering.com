@@ -57,7 +57,7 @@
         </button>
         <div class="collapse" id="enquiryMenu">
             <a href="{{ url_for('new_project') }}" class="nav-link">New Project</a>
-            <a href="#" class="nav-link disabled">Progress Table</a>
+            <a href="{{ url_for('view_progress_table', project_id=proj.id) }}" class="btn btn-sm btn-warning">Progress Table</a>
             <a href="#" class="nav-link disabled">Summary</a>
         </div>
 
