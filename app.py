@@ -126,12 +126,9 @@ class Progress(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
     date = db.Column(db.Date, nullable=False)
-    sheet_cutting = db.Column(db.Float, default=0)
-    fabrication = db.Column(db.Float, default=0)
-    dispatch = db.Column(db.Float, default=0)
-    notes = db.Column(db.Text)
-    project = db.relationship('Project', backref=db.backref('progress_entries', lazy=True))
-
+    sheet_cutting_area = db.Column(db.Float, default=0)
+    fabrication_area = db.Column(db.Float, default=0)
+    dispatch_area = db.Column(db.Float, default=0)
 
 
 
@@ -537,40 +534,31 @@ def export_pdf():
     return send_file(buffer, download_name='employee_data.pdf', as_attachment=True)
 
 
-@app.route('/progress_table')
-def progress_table():
-    progress_data = Progress.query.order_by(Progress.date.desc()).all()
-    projects = Project.query.all()
-    return render_template('new_project.html', progress_data=progress_data, projects=projects)
+@app.route('/progress/<int:project_id>', methods=['GET'])
+def view_progress(project_id):
+    project = Project.query.get_or_404(project_id)
+    progress_entries = Progress.query.filter_by(project_id=project_id).order_by(Progress.date).all()
+    return render_template('progress_table.html', project=project, progress_entries=progress_entries)
 
 
 
-@app.route('/add_progress', methods=['POST'])
-def add_progress():
-    try:
-        project_id = request.form['project_id']
-        date = request.form['date']
-        sheet_cutting = float(request.form.get('sheet_cutting', 0))
-        fabrication = float(request.form.get('fabrication', 0))
-        dispatch = float(request.form.get('dispatch', 0))
-        notes = request.form.get('notes', '')
+@app.route('/progress/update', methods=['POST'])
+def update_progress():
+    data = request.get_json()
+    project_id = int(data['project_id'])
+    date = data['date']
 
-        progress = Progress(
-            project_id=project_id,
-            date=date,
-            sheet_cutting=sheet_cutting,
-            fabrication=fabrication,
-            dispatch=dispatch,
-            notes=notes
-        )
-        db.session.add(progress)
-        db.session.commit()
-        flash("Progress updated successfully", "success")
-    except Exception as e:
-        print("Error saving progress:", e)
-        flash("Error saving progress", "danger")
-    return redirect(url_for('progress_table'))
+    entry = Progress.query.filter_by(project_id=project_id, date=date).first()
+    if not entry:
+        entry = Progress(project_id=project_id, date=date)
 
+    entry.sheet_cutting_area = float(data.get('sheet_cutting_area', 0))
+    entry.fabrication_area = float(data.get('fabrication_area', 0))
+    entry.dispatch_area = float(data.get('dispatch_area', 0))
+
+    db.session.add(entry)
+    db.session.commit()
+    return jsonify({'status': 'success'})
 
 # ------------------- INITIALIZE DB -------------------
 # ------------------- AUTO-MIGRATE ON RENDER -------------------
