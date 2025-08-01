@@ -283,10 +283,10 @@ def update_project(project_id):
     return jsonify({'status': 'success'})
 
 
-@app.route('/add_measurement/<int:project_id>', methods=['POST'])
-def add_measurement(project_id):
+@app.route('/add_measurement', methods=['POST'])
+def add_measurement():
     data = request.get_json()
-    print("Received data:", data)  # Debug
+    print("Received data:", data)
 
     try:
         # Safe numeric parsing
@@ -298,6 +298,7 @@ def add_measurement(project_id):
         degree = float(data.get('degree') or 0)
         quantity = int(data.get('quantity') or 1)
         factor = float(data.get('factor') or 1)
+        project_id = int(data.get('project_id') or 0)  # Extract from POST body
 
         area, gauge, g24, g22, g20, g18, gasket, corner_pieces, cleat = calculate_area_and_gauge({
             **data,
@@ -334,18 +335,16 @@ def add_measurement(project_id):
     except Exception as e:
         print("Error:", e)
         return jsonify({'status': 'error', 'message': str(e)}), 500
+
 @app.route('/add_measurement_sheet', methods=['GET'])
 def add_measurement_sheet():
-    projects = Project.query.all()
     selected_project_id = request.args.get('project_id', type=int)
-    measurements = []
+    if not selected_project_id:
+        return "Project ID is required.", 400
 
-    if selected_project_id:
-        measurements = Measurement.query.filter_by(project_id=selected_project_id).all()
-
+    measurements = Measurement.query.filter_by(project_id=selected_project_id).all()
     return render_template(
         'add_measurement_sheet.html',
-        projects=projects,
         selected_project_id=selected_project_id,
         measurements=measurements
     )
