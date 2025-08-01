@@ -154,53 +154,7 @@
     </tbody>
 </table>
 
-<!-- Modal for Adding Progress -->
-<div class="modal fade" id="progressModal" tabindex="-1" aria-labelledby="progressModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <form method="POST" action="/add_progress">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Add Daily Progress</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <div class="mb-2">
-            <label class="form-label">Project</label>
-            <select name="project_id" class="form-control" required>
-              {% for project in projects %}
-                <option value="{{ project.id }}">{{ project.location }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div class="mb-2">
-            <label class="form-label">Date</label>
-            <input type="date" name="date" class="form-control" required>
-          </div>
-          <div class="mb-2">
-            <label class="form-label">Sheet Cutting (m²)</label>
-            <input type="number" name="sheet_cutting" step="0.01" class="form-control">
-          </div>
-          <div class="mb-2">
-            <label class="form-label">Fabrication (m²)</label>
-            <input type="number" name="fabrication" step="0.01" class="form-control">
-          </div>
-          <div class="mb-2">
-            <label class="form-label">Dispatch (m²)</label>
-            <input type="number" name="dispatch" step="0.01" class="form-control">
-          </div>
-          <div class="mb-2">
-            <label class="form-label">Notes</label>
-            <textarea name="notes" class="form-control"></textarea>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-primary" type="submit">Save</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        </div>
-      </div>
-    </form>
-  </div>
-</div>
+
 
         
 
