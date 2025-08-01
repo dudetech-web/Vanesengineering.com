@@ -11,20 +11,7 @@
     <h2 class="mb-4">Add Measurement Sheet</h2>
 
     <!-- Project Dropdown -->
-    <form method="GET" action="/add_measurement_sheet" class="mb-4">
-        <div class="row">
-            <div class="col-md-8">
-                <select name="project_id" class="form-select" required onchange="this.form.submit()">
-                    <option value="">Select Project</option>
-                    {% for project in projects %}
-                        <option value="{{ project.id }}" {% if selected_project_id == project.id %}selected{% endif %}>
-                            {{ project.enquiry_id }} - {{ project.location }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-        </div>
-    </form>
+    
 
     {% if selected_project_id %}
     <div class="row">
