@@ -121,6 +121,20 @@ class Employee(db.Model):
     photo_filename = db.Column(db.String(100))
     signature_filename = db.Column(db.String(100))
 
+
+class Progress(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
+    date = db.Column(db.Date, nullable=False)
+    sheet_cutting = db.Column(db.Float, default=0)
+    fabrication = db.Column(db.Float, default=0)
+    dispatch = db.Column(db.Float, default=0)
+    notes = db.Column(db.Text)
+    project = db.relationship('Project', backref=db.backref('progress_entries', lazy=True))
+
+
+
+
 # ------------------- CALCULATION FUNCTION -------------------
 
 
@@ -522,6 +536,40 @@ def export_pdf():
     buffer.seek(0)
     return send_file(buffer, download_name='employee_data.pdf', as_attachment=True)
 
+
+@app.route('/progress_table')
+def progress_table():
+    progress_data = Progress.query.order_by(Progress.date.desc()).all()
+    projects = Project.query.all()
+    return render_template('new_project.html', progress_data=progress_data, projects=projects)
+
+
+
+@app.route('/add_progress', methods=['POST'])
+def add_progress():
+    try:
+        project_id = request.form['project_id']
+        date = request.form['date']
+        sheet_cutting = float(request.form.get('sheet_cutting', 0))
+        fabrication = float(request.form.get('fabrication', 0))
+        dispatch = float(request.form.get('dispatch', 0))
+        notes = request.form.get('notes', '')
+
+        progress = Progress(
+            project_id=project_id,
+            date=date,
+            sheet_cutting=sheet_cutting,
+            fabrication=fabrication,
+            dispatch=dispatch,
+            notes=notes
+        )
+        db.session.add(progress)
+        db.session.commit()
+        flash("Progress updated successfully", "success")
+    except Exception as e:
+        print("Error saving progress:", e)
+        flash("Error saving progress", "danger")
+    return redirect(url_for('progress_table'))
 
 
 # ------------------- INITIALIZE DB -------------------
