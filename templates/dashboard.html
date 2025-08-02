@@ -57,7 +57,7 @@
         </button>
         <div class="collapse" id="enquiryMenu">
             <a href="{{ url_for('new_project') }}" class="nav-link">New Project</a>
-            <form action="{{ url_for('view_progress_table_redirect') }}" method="GET" class="d-flex align-items-center mt-2">
+            <form action="{{ url_for('view_progress') }}" method="GET">
     <select name="project_id" class="form-select form-select-sm me-2" required>
         <option value="">Select Project</option>
         {% for proj in projects %}
