@@ -214,7 +214,8 @@ def login():
 
 @app.route('/dashboard')
 def dashboard():
-    return render_template('dashboard.html')
+    projects = Project.query.all()  # Make sure Project is already imported
+    return render_template('dashboard.html', projects=projects)
 
 @app.route('/register_vendor', methods=['GET', 'POST'])
 def register_vendor():
