@@ -13,7 +13,7 @@ from flask_migrate import Migrate
 from flask_migrate import init, migrate, upgrade, stamp
 from alembic.config import Config
 import shutil
-  # Or however your model is structured
+
 
 
 app = Flask(__name__)
