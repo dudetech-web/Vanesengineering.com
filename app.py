@@ -548,9 +548,10 @@ def view_progress():
         flash("Project not found.", "danger")
         return redirect(url_for('dashboard'))
 
-    measurements = MeasurementSheet.query.filter_by(project_id=project.id).all()
+    progress_entries = Progress.query.filter_by(project_id=project.id).order_by(Progress.date).all()
 
-    return render_template('progress_table.html', project=project, measurements=measurements)
+    return render_template('progress_table.html', project=project, progress_entries=progress_entries)
+
 
 @app.route('/progress/update', methods=['POST'])
 def update_progress():
