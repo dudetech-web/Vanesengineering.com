@@ -2,7 +2,9 @@ services:
   - type: web
     name: duct-vendor-app
     env: python
-    buildCommand: ""
+    buildCommand: |
+      pip install -r requirements.txt
+      flask db upgrade  # ✅ This runs your Alembic migrations
     startCommand: gunicorn app:app
     plan: free
     envVars:
