@@ -9,10 +9,10 @@ from flask import send_file
 from io import BytesIO
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
-from flask_migrate import Migrate
 from flask_migrate import init, migrate, upgrade, stamp
 from alembic.config import Config
 import shutil
+from flask_migrate import Migrate, upgrade
 
 
 
@@ -626,3 +626,6 @@ if __name__ == "__main__":
         upgrade()  # ✅ Apply all migrations including Progress table
 
     app.run(debug=True)
+
+
+
