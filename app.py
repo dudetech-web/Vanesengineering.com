@@ -622,5 +622,7 @@ def run_migrations_once():
 # ------------------- MAIN -------------------
 if __name__ == "__main__":
     with app.app_context():
-        run_migrations_once()  # Run only once on start
+        from flask_migrate import upgrade
+        upgrade()  # ✅ Apply all migrations including Progress table
+
     app.run(debug=True)
