@@ -561,6 +561,16 @@ def update_progress():
     db.session.commit()
     return jsonify({'status': 'success'})
 
+
+
+
+
+@app.route('/view_progress', methods=['GET'])
+def view_progress():
+    project_id = request.args.get('project_id')
+    # Load and display progress data for this project_id
+    return render_template('progress_table.html', ...)
+
 # ------------------- INITIALIZE DB -------------------
 # ------------------- AUTO-MIGRATE ON RENDER -------------------
 
