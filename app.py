@@ -535,13 +535,22 @@ def export_pdf():
     return send_file(buffer, download_name='employee_data.pdf', as_attachment=True)
 
 
-@app.route('/progress/<int:project_id>', methods=['GET'])
-def view_progress(project_id):
-    project = Project.query.get_or_404(project_id)
-    progress_entries = Progress.query.filter_by(project_id=project_id).order_by(Progress.date).all()
-    return render_template('progress_table.html', project=project, progress_entries=progress_entries)
+@app.route('/view_progress', methods=['GET'])
+def view_progress():
+    project_id = request.args.get('project_id')
 
+    if not project_id:
+        flash("No project selected.", "warning")
+        return redirect(url_for('dashboard'))
 
+    project = Project.query.get(project_id)
+    if not project:
+        flash("Project not found.", "danger")
+        return redirect(url_for('dashboard'))
+
+    measurements = MeasurementSheet.query.filter_by(project_id=project.id).all()
+
+    return render_template('progress_table.html', project=project, measurements=measurements)
 
 @app.route('/progress/update', methods=['POST'])
 def update_progress():
@@ -565,11 +574,7 @@ def update_progress():
 
 
 
-@app.route('/view_progress', methods=['GET'])
-def view_progress():
-    project_id = request.args.get('project_id')
-    # Load and display progress data for this project_id
-    return render_template('progress_table.html', ...)
+
 
 # ------------------- INITIALIZE DB -------------------
 # ------------------- AUTO-MIGRATE ON RENDER -------------------
