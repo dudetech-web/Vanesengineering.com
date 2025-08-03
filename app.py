@@ -132,7 +132,6 @@ class Progress(db.Model):
     dispatch_area = db.Column(db.Float, default=0)
 
 
-
 # ------------------- CALCULATION FUNCTION -------------------
 
 
