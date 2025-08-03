@@ -605,6 +605,19 @@ def run_migrations_once():
     migrate(message="Initial migration")  # Create new migration file
     upgrade()  # Apply the migration
 
+def run_migrations_once():
+    import os
+    from flask_migrate import init, migrate, upgrade
+    migrations_dir = os.path.join(os.path.dirname(__file__), 'migrations')
+
+    if not os.path.exists(migrations_dir):
+        init()
+        migrate(message="Initial migration for all models")
+    else:
+        migrate(message="Update migration")
+    
+    upgrade()
+
 
 # ------------------- MAIN -------------------
 if __name__ == "__main__":
