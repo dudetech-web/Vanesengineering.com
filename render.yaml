@@ -2,10 +2,7 @@ services:
   - type: web
     name: duct-vendor-app
     env: python
-    buildCommand: |
-      pip install -r requirements.txt
-      export FLASK_APP=app.py
-      flask db upgrade
+    buildCommand: pip install -r requirements.txt && FLASK_APP=app.py flask db upgrade
     startCommand: gunicorn app:app
     plan: free
     envVars:
@@ -14,7 +11,7 @@ services:
           name: duct-vendor-db
           property: connectionString
       - key: FLASK_APP
-        value: app.py  # ✅ Ensure it's also available in the runtime
+        value: app.py  # Optional but good for clarity at runtime
 
 databases:
   - name: duct-vendor-db
