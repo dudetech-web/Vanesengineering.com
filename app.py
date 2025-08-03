@@ -540,16 +540,15 @@ def export_pdf():
 def view_progress():
     project_id = request.args.get('project_id')
 
-    if not project_id:
-        flash("No project selected.", "warning")
-        return redirect(url_for('dashboard'))
-
-    project = Project.query.get(project_id)
-    if not project:
-        flash("Project not found.", "danger")
-        return redirect(url_for('dashboard'))
-
-    progress_entries = Progress.query.filter_by(project_id=project.id).order_by(Progress.date).all()
+    if project_id:
+        project = Project.query.get(project_id)
+        if not project:
+            flash("Project not found.", "danger")
+            return redirect(url_for('dashboard'))
+        progress_entries = Progress.query.filter_by(project_id=project.id).order_by(Progress.date).all()
+    else:
+        project = None
+        progress_entries = Progress.query.order_by(Progress.date).all()
 
     return render_template('progress_table.html', project=project, progress_entries=progress_entries)
 
